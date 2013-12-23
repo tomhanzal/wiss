@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+{% block body %}
+    
+    
+    <div class="container">
+      <div class="row">
+
+      {% for cho in chos %}
+        <!-- Cultural heritage object -->
+        <div class="col-xs-6 col-sm-4 col-md-3 cho">
+          <a href="{{ cho.content_link }}"><img src="{{ cho.picture }}" title="{{ cho.title }}"></a>
+          <h4>{{ cho.title }}</h4>
+          <p><a href="#" data-toggle="modal" data-target="#{{ cho.id }}-author"><strong>{{ cho.author }}</strong></a></p>
+          <p>{{ cho.description }}</p>
+          <div class="well">
+            <p>Content type: {{ cho.content_type }}</p>
+            <p>List <a href="#" data-toggle="modal" data-target="#{{ cho.id }}-subjects">subjects</a></p>
+            <p>View at <a href="{{ cho.content_link }}">{{ cho.content_provider }}</a>
+          </div>
+        </div>
+        <!-- Modal - author -->
+        <div class="modal fade" id="{{ cho.id }}-author" tabindex="-1" role="dialog" aria-labelledby="{{ cho.id }}-author-label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="{{ cho.id }}-author-label">{{ cho.author }}</h4>
+              </div>
+              <div class="modal-body">
+                <p>{{ cho.author_description }}</p>
+                <p><a href="{{ cho.author_link }}">More (at Wikipedia) &raquo;</a></p>
+              </div>
+              <div class="modal-footer">
+                <a class="btn btn-primary" href="#" role="button">Search for works by {{ cho.author }} &raquo;</a>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+        <!-- Modal - subjects -->
+        <div class="modal fade" id="{{ cho.id }}-subjects" tabindex="-1" role="dialog" aria-labelledby="{{ cho.id }}-subjects-label" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="{{ cho.id }}-subjects-label">{{ cho.title }}</h4>
+              </div>
+              <div class="modal-body">
+                <p>{{ cho.subject }}</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+      {% endfor %}
+
+      </div>
+    </div>
+{% endblock %}
