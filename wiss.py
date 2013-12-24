@@ -11,25 +11,43 @@ def homepage():
 
 @app.route('/s', methods=['GET', 'POST'])
 def search():
-    q = request.form['q']
+    #if request.method == 'POST':
+    #    q = request.form['q']
 
-    sparql = SPARQLWrapper("http://dbpedia.org/sparql")
+    sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
     sparql.setQuery("""
-        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-        SELECT ?label
-        WHERE { <http://dbpedia.org/resource/Asturias> rdfs:label ?label }
+        PREFIX dc: <http://purl.org/dc/elements/1.1/>
+        PREFIX ore: <http://www.openarchives.org/ore/terms/>
+        PREFIX edm: <http://www.europeana.eu/schemas/edm/>
+
+        select ?title ?author ?description ?content_type ?content_provider ?link ?image
+        where {
+          ?proxy dc:subject "love" ;
+          dc:title ?title ;
+          dc:creator ?author ;
+          dc:description ?description ;
+          ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
+          edm:type ?content_type .
+        }
+        limit 12
     """)
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
 
-    chos = dict()
+    objects = list()
 
     for result in results["results"]["bindings"]:
-        chos.update(result["label"]["value"])
+        objects.append({
+            "title": result["title"]["value"],
+            "author": result["author"]["value"],
+            "description": result["description"]["value"],
+            "content_type": result["content_type"]["value"],
+            "content_provider": result["content_provider"]["value"],
+            "link": result["link"]["value"],
+            "picture": result["image"]["value"]
+        })
 
-    return chos
-
-    #return render_template('layout.html', chos=chos) 
+    return render_template('show_entries.html', chos=objects) 
 
 
 if __name__ == '__main__':
