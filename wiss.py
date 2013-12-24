@@ -9,10 +9,13 @@ app = Flask(__name__)
 def homepage():
     return render_template('layout.html')
 
-@app.route('/s', methods=['GET', 'POST'])
+@app.route('/search', methods=['GET', 'POST'])
 def search():
     #if request.method == 'POST':
-    #    q = request.form['q']
+        #q = request.form['q']
+        #q = q[0:30]
+    #else:
+    q = "love"
 
     sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
     sparql.setQuery("""
@@ -22,7 +25,7 @@ def search():
 
         select ?title ?author ?description ?content_type ?content_provider ?link ?image
         where {
-          ?proxy dc:subject "love" ;
+          ?proxy dc:subject "%s";
           dc:title ?title ;
           dc:creator ?author ;
           dc:description ?description ;
@@ -30,11 +33,12 @@ def search():
           edm:type ?content_type .
         }
         limit 12
-    """)
+    """ % q)
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
 
     objects = list()
+    idnum = 0
 
     for result in results["results"]["bindings"]:
         objects.append({
@@ -43,9 +47,11 @@ def search():
             "description": result["description"]["value"],
             "content_type": result["content_type"]["value"],
             "content_provider": result["content_provider"]["value"],
-            "link": result["link"]["value"],
-            "picture": result["image"]["value"]
+            "content_link": result["link"]["value"],
+            "picture": result["image"]["value"],
+            "id": idnum
         })
+        idnum = idnum + 1
 
     return render_template('show_entries.html', chos=objects) 
 
