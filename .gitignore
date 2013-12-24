@@ -2,3 +2,4 @@ venv
 *.pyc
 *.pyc~
 test.py
+*.py~
