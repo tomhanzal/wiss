@@ -1,6 +1,6 @@
 import os
 from flask import Flask
-from flask import render_template
+from flask import render_template, request
 from SPARQLWrapper import SPARQLWrapper, JSON
 
 app = Flask(__name__)
@@ -11,11 +11,11 @@ def homepage():
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
-    #if request.method == 'POST':
-        #q = request.form['q']
-        #q = q[0:30]
-    #else:
-    q = "love"
+    if request.method == 'POST':
+        query = request.form['q']
+        query = query[0:30]
+    else:
+        query = "women"
 
     sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
     sparql.setQuery("""
@@ -23,7 +23,7 @@ def search():
         PREFIX ore: <http://www.openarchives.org/ore/terms/>
         PREFIX edm: <http://www.europeana.eu/schemas/edm/>
 
-        select ?title ?author ?description ?content_type ?content_provider ?link ?image
+        select ?title ?author ?description ?content_type ?content_provider ?link ?image ?proxy
         where {
           ?proxy dc:subject "%s";
           dc:title ?title ;
@@ -33,7 +33,7 @@ def search():
           edm:type ?content_type .
         }
         limit 12
-    """ % q)
+    """ % query)
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
 
@@ -49,7 +49,8 @@ def search():
             "content_provider": result["content_provider"]["value"],
             "content_link": result["link"]["value"],
             "picture": result["image"]["value"],
-            "id": idnum
+            "id": idnum,
+            "proxy": result["proxy"]["value"]
         })
         idnum = idnum + 1
 
