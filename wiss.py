@@ -1,13 +1,13 @@
 import os
 from flask import Flask
-from flask import render_template, request
+from flask import render_template, request, url_for
 from SPARQLWrapper import SPARQLWrapper, JSON
 
 app = Flask(__name__)
 
 @app.route('/')
 def homepage():
-    return render_template('layout.html')
+    return render_template('homepage.html')
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
@@ -15,7 +15,7 @@ def search():
         query = request.form['q']
         query = query[0:30]
     else:
-        query = "women"
+        query = 'forest'
 
     sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
     sparql.setQuery("""
@@ -54,8 +54,8 @@ def search():
         })
         idnum = idnum + 1
 
-    return render_template('show_entries.html', chos=objects) 
+    return render_template('search.html', chos=objects) 
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=8080)
