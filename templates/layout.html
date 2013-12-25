@@ -8,10 +8,11 @@
     <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
 
 	<style type="text/css">
-      #info {
-        background-color: #ddd;
-        width: 100%;
-      }
+        #info {
+          background-color: #ddd;
+          width: 100%;
+        }
+        body {padding-top: 60px;}
 	</style>
 
   </head>
@@ -47,9 +48,25 @@
       </div>
     </div>   
 
-  <!-- Core JS -->
+    <!-- Core JS -->
     <script src="http://code.jquery.com/jquery.js"></script>
     <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
 
+    <!-- AJAX -->
+    <script type=text/javascript>
+
+      $(document).ready(function(){
+        $("a.author").click(function(){
+          var self = $(this);
+          $.getJSON('/a', { author: self.text() }, function(data) {
+            // alert(data["abstract"]["value"]);
+            $(self.data('target')+" .modal-body img").attr("src",data["image"]["value"]);
+            $(self.data('target')+" .modal-body p:first").text(data["abstract"]["value"]);
+            $(self.data('target')+" .modal-body p a:first").attr("href",data["link"]["value"]);
+          });
+        });
+      });
+      
+    </script>
   </body>
 </html>

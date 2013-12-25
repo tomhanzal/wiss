@@ -1,6 +1,6 @@
 import os
 from flask import Flask
-from flask import render_template, request, url_for
+from flask import render_template, request, jsonify
 from SPARQLWrapper import SPARQLWrapper, JSON
 
 app = Flask(__name__)
@@ -54,7 +54,44 @@ def search():
         })
         idnum = idnum + 1
 
-    return render_template('search.html', chos=objects) 
+    return render_template('search.html', chos=objects)
+
+@app.route('/a')
+def author_info():
+    author = request.args.get('author', '', type=str)
+
+    sparql = SPARQLWrapper("http://dbpedia.org/sparql")
+    sparql.setQuery("""
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+        PREFIX dbo: <http://dbpedia.org/ontology/>
+
+        select ?name ?abstract ?image ?link
+        where {
+          ?person foaf:name "%s"@en ;
+            a dbo:Artist ;
+            dbo:abstract ?abstract ;
+            foaf:name ?name ;
+            foaf:isPrimaryTopicOf ?link .
+          optional {?person foaf:depiction ?image . }
+          filter(lang(?abstract) = "en")
+        }
+        limit 1
+    """ % author)
+    sparql.setReturnFormat(JSON)
+    results = sparql.query().convert()
+
+    #author_info = list()
+
+    #for result in results["results"]["bindings"]:
+    #    author_info.append({
+    #        "author": result["name"]["value"],
+    #        "author_picture": result["image"]["value"],
+    #        "author_description": result["abstract"]["value"],
+    #        "author_link": result["link"]["value"]
+    #    })
+
+    return jsonify(results["results"]["bindings"][0])
 
 
 if __name__ == '__main__':
