@@ -14,7 +14,7 @@
           <p>{{ cho.description }}</p>
           <div class="well">
             <p>Content type: {{ cho.content_type }}</p>
-            <p>List <a href="#" data-toggle="modal" data-target="#{{ cho.id }}-subjects" class="subjects">subjects</a></p>
+            <p>List <a href="#" data-toggle="modal" data-target="#{{ cho.id }}-subjects" class="subjects" data-obj="{{ cho.proxy }}">subjects</a></p>
             <p>View at <a href="{{ cho.content_link }}">{{ cho.content_provider }}</a>
           </div>
         </div>

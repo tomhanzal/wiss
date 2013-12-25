@@ -93,6 +93,25 @@ def author_info():
 
     return jsonify(results["results"]["bindings"][0])
 
+@app.route('/s')
+def list_subjects():
+    obj = request.args.get('obj', '', type=str)
+    obj = "<%s>" % obj
+
+    sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
+    sparql.setQuery("""
+        PREFIX dc: <http://purl.org/dc/elements/1.1/>
+
+        select ?subject
+        where {
+          %s dc:subject ?subject .
+        }
+    """ % obj)
+    sparql.setReturnFormat(JSON)
+    results = sparql.query().convert()
+
+    return jsonify(results)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
