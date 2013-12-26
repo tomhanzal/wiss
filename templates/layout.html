@@ -34,7 +34,7 @@
           <a class="navbar-brand" href="#">Project name</a>
         </div>
         <div class="navbar-collapse collapse">
-          <form class="navbar-form navbar-left" role="form" action="search" method="post">
+          <form class="navbar-form navbar-left" role="form" action="search" method="get">
             <div class="form-group" style="width: 260px;">
               <input type="text" placeholder="" class="form-control" name="q">
             </div>
@@ -63,15 +63,17 @@
         $("a.author").click(function(){
           var self = $(this);
           $.getJSON('/a', { author: self.text() }, function(data) {
-            $(self.data('target')+" .modal-body").append("<img src=\""+data["image"]["value"]+"\">");
-            $(self.data('target')+" .modal-body").append("<p>"+data["abstract"]["value"]+"</p>");
-            $(self.data('target')+" .modal-body").append("<p><a href=\""+data["link"]["value"]+"\">More (at Wikipedia) &raquo;</a></p>")
+            $(self.data('target')+" .modal-body").append("<img src=\""+data["image"]+"\">");
+            $(self.data('target')+" .modal-body").append("<p>"+data["abstract"]+"</p>");
+            $(self.data('target')+" .modal-body").append("<p><a href=\""+data["link"]+"\">More (at Wikipedia) &raquo;</a></p>")
           });
         });
         $("a.subjects").click(function(){
           var self = $(this);
-          $.getJSON('/s', { obj: self.data("proxy") }, function(data) {
-            $(self.data('target')+" .modal-body").append("");
+          $.getJSON('/s', { obj: self.data("obj") }, function(data) {
+            $.each(data["subjects"], function(index, item) {
+              $(self.data('target')+" .modal-body ul").append("<li><a href=\"/search?q="+item+"\">"+item+"</a></li>");
+            });
           });
         });
       });
