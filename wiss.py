@@ -9,13 +9,9 @@ app = Flask(__name__)
 def homepage():
     return render_template('homepage.html')
 
-@app.route('/search', methods=['GET', 'POST'])
+@app.route('/search')
 def search():
-    if request.method == 'POST':
-        query = request.form['q']
-        query = query[0:30]
-    else:
-        query = 'forest'
+    query = request.args.get('q', '', type=str)
 
     sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
     sparql.setQuery("""
@@ -32,7 +28,7 @@ def search():
           ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
           edm:type ?content_type .
         }
-        limit 12
+        limit 40
     """ % query)
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
@@ -91,7 +87,14 @@ def author_info():
     #        "author_link": result["link"]["value"]
     #    })
 
-    return jsonify(results["results"]["bindings"][0])
+    result = results["results"]["bindings"][0]
+    author_info = dict()
+    author_info["abstract"] = result["abstract"]["value"]
+    author_info["image"] = result["image"]["value"]
+    author_info["link"] = result["link"]["value"]
+    author_info["name"] = result["name"]["value"]
+
+    return jsonify(author_info)
 
 @app.route('/s')
 def list_subjects():
@@ -110,7 +113,12 @@ def list_subjects():
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
 
-    return jsonify(results)
+    subjects = list()
+
+    for result in results["results"]["bindings"]:
+        subjects.append(result["subject"]["value"])
+
+    return jsonify(dict({"subjects": subjects}))
 
 
 if __name__ == '__main__':
