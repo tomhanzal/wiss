@@ -8,13 +8,13 @@
       {% for cho in chos %}
         <!-- Cultural heritage object -->
         <div class="col-xs-6 col-sm-4 col-md-3 cho">
-          <a href="{{ cho.content_link }}"><img src="{{ cho.picture }}" title="{{ cho.title }}"></a>
+          <a href="{{ cho.content_link }}"><img src="{{ cho.picture }}" title="{{ cho.title }}" alt="{{ cho.title }}"></a>
           <h4>{{ cho.title }}</h4>
           <p><strong><a href="#" data-toggle="modal" data-target="#{{ cho.id }}-author" class="author">{{ cho.author }}</a></strong></p>
           <p>{{ cho.description }}</p>
           <div class="well">
             <p>Content type: {{ cho.content_type }}</p>
-            <p>List <a href="#" data-toggle="modal" data-target="#{{ cho.id }}-subjects" class="subjects" data-obj="{{ cho.proxy }}">subjects</a></p>
+            <p>List <a href="#" data-toggle="modal" data-target="#{{ cho.id }}-subjects" class="subjects" data-obj="{{ cho.obj }}">subjects</a></p>
             <p>View at <a href="{{ cho.content_link }}">{{ cho.content_provider }}</a>
           </div>
         </div>

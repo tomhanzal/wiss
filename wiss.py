@@ -19,14 +19,15 @@ def search():
         PREFIX ore: <http://www.openarchives.org/ore/terms/>
         PREFIX edm: <http://www.europeana.eu/schemas/edm/>
 
-        select ?title ?author ?description ?content_type ?content_provider ?link ?image ?proxy
+        select ?title ?author ?description ?content_type ?content_provider ?link ?image ?object
         where {
           ?proxy dc:subject "%s";
-          dc:title ?title ;
-          dc:creator ?author ;
-          dc:description ?description ;
-          ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
-          edm:type ?content_type .
+            dc:title ?title ;
+            dc:creator ?author ;
+            dc:description ?description ;
+            ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
+            ore:proxyFor ?object ;
+            edm:type ?content_type .
         }
         limit 40
     """ % query)
@@ -37,16 +38,20 @@ def search():
     idnum = 0
 
     for result in results["results"]["bindings"]:
+        desc = result["description"]["value"]
+        if len(desc) > 500:
+            desc = desc[0:500] + " [...]"
+
         objects.append({
             "title": result["title"]["value"],
             "author": result["author"]["value"],
-            "description": result["description"]["value"],
+            "description": desc,
             "content_type": result["content_type"]["value"],
             "content_provider": result["content_provider"]["value"],
             "content_link": result["link"]["value"],
             "picture": result["image"]["value"],
             "id": idnum,
-            "proxy": result["proxy"]["value"]
+            "obj": result["object"]["value"]
         })
         idnum = idnum + 1
 
@@ -94,12 +99,21 @@ def list_subjects():
     sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
     sparql.setQuery("""
         PREFIX dc: <http://purl.org/dc/elements/1.1/>
+        PREFIX ore: <http://www.openarchives.org/ore/terms/>
+        PREFIX edm: <http://www.europeana.eu/schemas/edm/>
 
         select ?subject
         where {
-          %s dc:subject ?subject .
+          {
+          ?proxy ore:proxyFor %s ;
+            dc:subject ?subject .
+          }
+          union {
+          ?proxy ore:proxyFor %s ;
+            edm:hasMet ?subject .
+          }
         }
-    """ % obj)
+    """ % (obj, obj))
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
 
