@@ -63,7 +63,7 @@
           </div>
         </div>
         <div>
-          Developed for the course <i>4IZ440 - Linked data on the web</i> at KIZI FIS VSE by Tomas Hanzal, 2013-2014
+          Developed as an assignment for the course <i>4IZ440 - Linked data on the web</i> at <a href="http://kizi.vse.cz/">KIZI</a> by <a href="https://twitter.com/tomas_hanzal">Tomas Hanzal</a>, 2013-2014
         </div>
       </div>
     </div>   
@@ -76,6 +76,7 @@
     <script type=text/javascript>
 
       $(document).ready(function(){
+
         $("a.author").click(function(){
           var self = $(this);
           $.getJSON('/a', { author: self.text() }, function(data) {
@@ -84,14 +85,16 @@
             $(self.data('target')+" .modal-body").append("<p><a href=\""+data["link"]+"\">More (at Wikipedia) &raquo;</a></p>")
           });
         });
+
         $("a.subjects").click(function(){
           var self = $(this);
           $.getJSON('/s', { obj: self.data("obj") }, function(data) {
             $.each(data["subjects"], function(index, item) {
-              $(self.data('target')+" .modal-body ul").append("<li><a href=\"/search?q="+item+"\">"+item+"</a></li>");
+              $(self.data('target')+" .modal-body ul").append("<li><a href=\"/search?q="+item["subject"]+"\">"+item["label"]+"</a></li>");
             });
           });
         });
+
       });
       
     </script>

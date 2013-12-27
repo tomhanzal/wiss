@@ -31,6 +31,28 @@ def search():
         }
         limit 40
     """ % query)
+
+    # If searching by GEMET thesaurus URI...
+    if query[0:7] == "http://":
+        sparql.setQuery("""
+            PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            PREFIX ore: <http://www.openarchives.org/ore/terms/>
+            PREFIX edm: <http://www.europeana.eu/schemas/edm/>
+
+            select ?title ?author ?description ?content_type ?content_provider ?link ?image ?object
+            where {
+              ?proxy1 edm:hasMet <%s> ;
+                ore:proxyFor ?object .
+              ?proxy dc:title ?title ;
+                dc:creator ?author ;
+                dc:description ?description ;
+                ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
+                ore:proxyFor ?object ;
+                edm:type ?content_type .
+            }
+            limit 40
+        """ % query)
+
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
 
@@ -120,7 +142,28 @@ def list_subjects():
     subjects = list()
 
     for result in results["results"]["bindings"]:
-        subjects.append(result["subject"]["value"])
+        subject = result["subject"]["value"]
+        label = subject
+
+        # Label GEMET thesaurus URIs
+        #if subject[0:42] == "http://www.eionet.europa.eu/gemet/concept/":
+        #    sparql = SPARQLWrapper("http://semantic.eea.europa.eu/sparql")
+        #    sparql.setQuery("""
+        #        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        #        PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+        #        SELECT ?label
+        #        WHERE {
+        #          <%s> skos:prefLabel ?label .
+        #          filter(lang(?label) = "en")
+        #        }
+        #    """ % subject)
+        #    sparql.setReturnFormat(JSON)
+        #    thes_result = sparql.query().convert()
+
+        #    label = thes_result #"%s (%s)" % (thes_result["results"]["bindings"][0]["label"]["value"], subject)
+
+        subjects.append({"subject": subject, "label": label})
 
     return jsonify(dict({"subjects": subjects}))
 
