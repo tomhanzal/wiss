@@ -1,7 +1,7 @@
 import os
-from flask import Flask
-from flask import render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify
 from SPARQLWrapper import SPARQLWrapper, JSON
+
 
 app = Flask(__name__)
 
@@ -147,6 +147,7 @@ def list_subjects():
 
         # Label GEMET thesaurus URIs
         #if subject[0:42] == "http://www.eionet.europa.eu/gemet/concept/":
+
         #    sparql = SPARQLWrapper("http://semantic.eea.europa.eu/sparql")
         #    sparql.setQuery("""
         #        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -162,6 +163,7 @@ def list_subjects():
         #    thes_result = sparql.query().convert()
 
         #    label = thes_result #"%s (%s)" % (thes_result["results"]["bindings"][0]["label"]["value"], subject)
+
 
         subjects.append({"subject": subject, "label": label})
 
