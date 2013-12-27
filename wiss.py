@@ -146,23 +146,23 @@ def list_subjects():
         label = subject
 
         # Label GEMET thesaurus URIs
-        #if subject[0:42] == "http://www.eionet.europa.eu/gemet/concept/":
+        if subject[0:42] == "http://www.eionet.europa.eu/gemet/concept/":
 
-        #    sparql = SPARQLWrapper("http://semantic.eea.europa.eu/sparql")
-        #    sparql.setQuery("""
-        #        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-        #        PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+            sparql = SPARQLWrapper("http://semantic.eea.europa.eu/sparql")
+            sparql.setQuery("""
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 
-        #        SELECT ?label
-        #        WHERE {
-        #          <%s> skos:prefLabel ?label .
-        #          filter(lang(?label) = "en")
-        #        }
-        #    """ % subject)
-        #    sparql.setReturnFormat(JSON)
-        #    thes_result = sparql.query().convert()
+                SELECT ?label
+                WHERE {
+                  <%s> skos:prefLabel ?label .
+                  filter(lang(?label) = "en")
+                }
+            """ % subject)
+            sparql.setReturnFormat(JSON)
+            thes_result = sparql.query().convert()
 
-        #    label = thes_result #"%s (%s)" % (thes_result["results"]["bindings"][0]["label"]["value"], subject)
+            label = "%s (%s)" % (thes_result["results"]["bindings"][0]["label"]["value"], subject)
 
 
         subjects.append({"subject": subject, "label": label})
