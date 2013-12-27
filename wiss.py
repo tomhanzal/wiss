@@ -77,16 +77,6 @@ def author_info():
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
 
-    #author_info = list()
-
-    #for result in results["results"]["bindings"]:
-    #    author_info.append({
-    #        "author": result["name"]["value"],
-    #        "author_picture": result["image"]["value"],
-    #        "author_description": result["abstract"]["value"],
-    #        "author_link": result["link"]["value"]
-    #    })
-
     result = results["results"]["bindings"][0]
     author_info = dict()
     author_info["abstract"] = result["abstract"]["value"]
