@@ -30,7 +30,7 @@
 
               </div>
               <div class="modal-footer">
-                <a class="btn btn-primary" href="#" role="button">Search for works by {{ cho.author }} &raquo;</a>
+                <a class="btn btn-primary" href="/search/author?q={{ cho.author }}" role="button">Search for works by {{ cho.author }} &raquo;</a>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
               </div>
             </div><!-- /.modal-content -->
@@ -45,6 +45,7 @@
                 <h4 class="modal-title" id="{{ cho.id }}-subjects-label">{{ cho.title }}</h4>
               </div>
               <div class="modal-body">
+                <img src="/static/loading-indicator.gif" class="loading-indicator">
                 <ul></ul>
               </div>
               <div class="modal-footer">
