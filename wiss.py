@@ -29,7 +29,7 @@ def search():
             ore:proxyFor ?object ;
             edm:type ?content_type .
         }
-        limit 40
+        limit 100
     """ % query)
 
     # If searching by GEMET thesaurus URI...
@@ -50,7 +50,7 @@ def search():
                 ore:proxyFor ?object ;
                 edm:type ?content_type .
             }
-            limit 40
+            limit 100
         """ % query)
 
     sparql.setReturnFormat(JSON)

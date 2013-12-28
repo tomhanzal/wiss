@@ -109,7 +109,8 @@
 
         $('input.mysearch').typeahead({
           name: 'search-query',
-          local: ['sea', 'love', 'Greek mythology']
+          local: ['sea', 'love', 'Greek mythology'],
+          prefetch: '/static/subjects.json'
         });
         //$('.typeahead.input-sm').siblings('input.tt-hint').addClass('hint-small');
         //$('.typeahead.input-lg').siblings('input.tt-hint').addClass('hint-large');
