@@ -79,6 +79,55 @@ def search():
 
     return render_template('search.html', chos=objects)
 
+@app.route('/search/author')
+def search_author():
+    query = request.args.get('q', '', type=str)
+
+    sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
+    sparql.setQuery("""
+        PREFIX dc: <http://purl.org/dc/elements/1.1/>
+        PREFIX ore: <http://www.openarchives.org/ore/terms/>
+        PREFIX edm: <http://www.europeana.eu/schemas/edm/>
+
+        select ?title ?author ?description ?content_type ?content_provider ?link ?image ?object
+        where {
+          ?proxy dc:creator "%s", ?author ;
+            dc:title ?title ;
+            dc:description ?description ;
+            ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
+            ore:proxyFor ?object ;
+            edm:type ?content_type .
+        }
+        limit 40
+    """ % query)
+
+    sparql.setReturnFormat(JSON)
+    results = sparql.query().convert()
+
+    objects = list()
+    idnum = 0
+
+    for result in results["results"]["bindings"]:
+        desc = result["description"]["value"]
+        if len(desc) > 500:
+            desc = desc[0:500] + " [...]"
+
+        objects.append({
+            "title": result["title"]["value"],
+            "author": result["author"]["value"],
+            "description": desc,
+            "content_type": result["content_type"]["value"],
+            "content_provider": result["content_provider"]["value"],
+            "content_link": result["link"]["value"],
+            "picture": result["image"]["value"],
+            "id": idnum,
+            "obj": result["object"]["value"]
+        })
+        idnum = idnum + 1
+
+    return render_template('search.html', chos=objects)
+
+
 @app.route('/a')
 def author_info():
     author = request.args.get('author', '', type=str)
@@ -105,8 +154,13 @@ def author_info():
     results = sparql.query().convert()
 
     result = results["results"]["bindings"][0]
+
+    abstract = result["abstract"]["value"]
+    if len(abstract) > 1000:
+        abstract = abstract[0:1000] + " [...]"
+
     author_info = dict()
-    author_info["abstract"] = result["abstract"]["value"]
+    author_info["abstract"] = abstract
     author_info["image"] = result["image"]["value"]
     author_info["link"] = result["link"]["value"]
     author_info["name"] = result["name"]["value"]

@@ -14,7 +14,7 @@
         }
         body {padding-top: 60px;}
         #info {
-          background-color: #ddd;
+          background-color: #eee;
           width: 100%;
           padding-top: 20px;
           padding-bottom: 20px;
@@ -89,6 +89,7 @@
         $("a.subjects").click(function(){
           var self = $(this);
           $.getJSON('/s', { obj: self.data("obj") }, function(data) {
+            $(self.data('target')+" .modal-body .loading-indicator").hide();
             $.each(data["subjects"], function(index, item) {
               $(self.data('target')+" .modal-body ul").append("<li><a href=\"/search?q="+item["subject"]+"\">"+item["label"]+"</a></li>");
             });
