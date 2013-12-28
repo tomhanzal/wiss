@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap -->
     <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/typeahead.js-bootstrap.css" rel="stylesheet">
 
     <style type="text/css">
         img {
@@ -23,6 +24,11 @@
           padding-top: 100px;
           padding-bottom: 100px;
         }
+
+        .twitter-typeahead .tt-hint {display: block; height: 34px; padding: 6px 12px; font-size: 14px;line-height: 1.428571429; border: 1px solid transparent; border-radius:4px;}
+        .twitter-typeahead .hint-small {height: 30px; padding: 5px 10px; font-size: 12px; border-radius: 3px; line-height: 1.5;}
+        .twitter-typeahead .hint-large {height: 45px; padding: 10px 16px; font-size: 18px; border-radius: 6px; line-height: 1.33;}
+
     </style>
 
   </head>
@@ -41,8 +47,8 @@
         </div>
         <div class="navbar-collapse collapse">
           <form class="navbar-form navbar-left" role="form" action="search" method="get">
-            <div class="form-group" style="width: 260px;">
-              <input type="text" placeholder="" class="form-control" name="q">
+            <div class="form-group">
+              <input type="text" class="form-control mysearch" name="q" autocomplete="off">
             </div>
             <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span> Search</button>
           </form>
@@ -57,13 +63,17 @@
         <div class="row">
           <div class="col-sm-6">
             Data sources used:
+            <a href="http://europeana.eu/"><strong>Europeana</strong></a> (<a href="http://europeana.ontotext.com/sparql">SPARQL endpoint</a>), 
+            <a href="http://dbpedia.org"><strong>DBpedia</strong></a> (<a href="http://dbpedia.org/sparql">SPARQL endpoint</a>), 
+            <a href="http://www.eionet.europa.eu/gemet/"><strong>GEMET Thesaurus</strong></a> (<a href="http://semantic.eea.europa.eu/sparql">European Environmental Agency SPARQL endpoint</a>)
           </div>
           <div class="col-sm-6">
             [social]
           </div>
         </div>
+        <hr>
         <div>
-          Developed as an assignment for the course <i>4IZ440 - Linked data on the web</i> at <a href="http://kizi.vse.cz/">KIZI</a> by <a href="https://twitter.com/tomas_hanzal">Tomas Hanzal</a>, 2013-2014
+          Developed as an assignment for the course <strong>4IZ440 - Linked data on the web</strong> at <a href="http://kizi.vse.cz/">KIZI</a>, <a href="http://www.vse.cz/english/">University of Economics, Prague</a> by <a href="https://twitter.com/tomas_hanzal">Tomas Hanzal</a>, 2013-2014
         </div>
       </div>
     </div>   
@@ -71,6 +81,7 @@
     <!-- Core JS -->
     <script src="http://code.jquery.com/jquery.js"></script>
     <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script src="/static/typeahead.min.js"></script>
 
     <!-- AJAX -->
     <script type=text/javascript>
@@ -95,6 +106,13 @@
             });
           });
         });
+
+        $('input.mysearch').typeahead({
+          name: 'search-query',
+          local: ['sea', 'love', 'Greek mythology']
+        });
+        //$('.typeahead.input-sm').siblings('input.tt-hint').addClass('hint-small');
+        //$('.typeahead.input-lg').siblings('input.tt-hint').addClass('hint-large');
 
       });
       
