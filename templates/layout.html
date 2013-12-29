@@ -62,13 +62,21 @@
       <div class="container">
         <div class="row">
           <div class="col-sm-6">
-            Data sources used:
-            <a href="http://europeana.eu/"><strong>Europeana</strong></a> (<a href="http://europeana.ontotext.com/sparql">SPARQL endpoint</a>), 
-            <a href="http://dbpedia.org"><strong>DBpedia</strong></a> (<a href="http://dbpedia.org/sparql">SPARQL endpoint</a>), 
-            <a href="http://www.eionet.europa.eu/gemet/"><strong>GEMET Thesaurus</strong></a> (<a href="http://semantic.eea.europa.eu/sparql">European Environmental Agency SPARQL endpoint</a>)
+            <div>Data sources used:</div>
+            <div class="row">
+              <div class="col-xs-4">
+                <a href="http://europeana.eu/"><img alt="Europeana" src="/static/europeana-logo.png"></a> (<a href="http://europeana.ontotext.com/sparql">SPARQL endpoint</a>)
+              </div>
+              <div class="col-xs-4">
+                <a href="http://dbpedia.org"><img alt="DBpedia" src="/static/dbpedia-logo.png"></a> (<a href="http://dbpedia.org/sparql">SPARQL endpoint</a>)
+              </div>
+              <div class="col-xs-4">
+                <a href="http://www.eionet.europa.eu/gemet/"><strong>GEMET Thesaurus</strong></a> (<a href="http://semantic.eea.europa.eu/sparql">European Environment Agency SPARQL endpoint</a>)
+              </div>
+            </div>
           </div>
           <div class="col-sm-6">
-            [social]
+            <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en" data-url="http://wiss.herokuapp.com/" data-text="Explore European cultural heritage by looking up topics or subjects you're interested in" data-via="tomas_hanzal">Tweet</a>
           </div>
         </div>
         <hr>
@@ -108,15 +116,14 @@
         });
 
         $('input.mysearch').typeahead({
-          name: 'search-query',
-          local: ['sea', 'love', 'Greek mythology'],
+          name: 'wiss-search',
           prefetch: '/static/subjects.json'
         });
-        //$('.typeahead.input-sm').siblings('input.tt-hint').addClass('hint-small');
-        //$('.typeahead.input-lg').siblings('input.tt-hint').addClass('hint-large');
 
       });
-      
     </script>
+
+    <!-- Twitter -->
+    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
   </body>
 </html>
