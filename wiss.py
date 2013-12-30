@@ -1,9 +1,17 @@
-import os
+import os, re
 from flask import Flask, render_template, request, jsonify
 from SPARQLWrapper import SPARQLWrapper, JSON
 
 
 app = Flask(__name__)
+
+def convert_name(name):
+    output = re.sub('\s\(\w*\)', '', name)
+    if ',' in output:
+        output = output.split(', ')
+        output = '%s %s' % (output[1], output[0])
+    return output
+
 
 @app.route('/')
 def homepage():
@@ -131,6 +139,8 @@ def search_author():
 @app.route('/a')
 def author_info():
     author = request.args.get('author', '', type=str)
+
+    author = convert_name(author)
 
     sparql = SPARQLWrapper("http://dbpedia.org/sparql")
     sparql.setQuery("""
