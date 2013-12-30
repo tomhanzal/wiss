@@ -104,7 +104,7 @@
         $("a.author").click(function(){
           var self = $(this);
           $.getJSON('/a', { author: self.text() }, function(data) {
-            $(self.data('target')+" .modal-body").append("<img src=\""+data["image"]+"\" alt=\""+data["name"]+"\">");
+            $(self.data('target')+" .modal-body").append("<p><img src=\""+data["image"]+"\" alt=\""+data["name"]+"\" class=\"img-thumbnail\"></p>");
             $(self.data('target')+" .modal-body").append("<p>"+data["abstract"]+"</p>");
             $(self.data('target')+" .modal-body").append("<p><a href=\""+data["link"]+"\">More (at Wikipedia) &raquo;</a></p>")
           });
