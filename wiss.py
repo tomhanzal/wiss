@@ -139,7 +139,6 @@ def search_author():
 @app.route('/a')
 def author_info():
     author = request.args.get('author', '', type=str)
-
     author = convert_name(author)
 
     sparql = SPARQLWrapper("http://dbpedia.org/sparql")
