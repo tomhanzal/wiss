@@ -27,20 +27,21 @@ def search():
         PREFIX ore: <http://www.openarchives.org/ore/terms/>
         PREFIX edm: <http://www.europeana.eu/schemas/edm/>
 
-        select ?title ?author ?description ?content_type ?content_provider ?link ?image ?object
+        select ?title ?author ?content_type ?content_provider ?link ?image ?object (GROUP_CONCAT(?desc ; SEPARATOR = " ") AS ?description)
         where {
           ?proxy dc:subject "%s";
             dc:title ?title ;
             dc:creator ?author ;
-            dc:description ?description ;
             ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
             ore:proxyFor ?object ;
-            edm:type ?content_type .
+            edm:type ?content_type ;
+            dc:description ?desc .
         }
+        group by ?object ?title ?content_type ?content_provider ?link ?image ?author
         limit 100
     """ % query)
 
-    # If searching by GEMET thesaurus URI...
+    # If searching by URI...
     if query[0:7] == "http://":
         sparql.setQuery("""
             PREFIX dc: <http://purl.org/dc/elements/1.1/>
@@ -62,30 +63,35 @@ def search():
         """ % query)
 
     sparql.setReturnFormat(JSON)
-    results = sparql.query().convert()
 
     objects = list()
     idnum = 0
 
-    for result in results["results"]["bindings"]:
-        desc = result["description"]["value"]
-        if len(desc) > 500:
-            desc = desc[0:500] + " [...]"
+    try:
+        results = sparql.query().convert()
 
-        objects.append({
-            "title": result["title"]["value"],
-            "author": result["author"]["value"],
-            "description": desc,
-            "content_type": result["content_type"]["value"],
-            "content_provider": result["content_provider"]["value"],
-            "content_link": result["link"]["value"],
-            "picture": result["image"]["value"],
-            "id": idnum,
-            "obj": result["object"]["value"]
-        })
-        idnum = idnum + 1
+        for result in results["results"]["bindings"]:
+            desc = result["description"]["value"]
+            if len(desc) > 500:
+                desc = desc[0:500] + " [...]"
 
-    return render_template('search.html', chos=objects)
+            objects.append({
+                "title": result["title"]["value"],
+                "author": result["author"]["value"],
+                "description": desc,
+                "content_type": result["content_type"]["value"],
+                "content_provider": result["content_provider"]["value"],
+                "content_link": result["link"]["value"],
+                "picture": result["image"]["value"],
+                "id": idnum,
+                "obj": result["object"]["value"]
+            })
+            idnum = idnum + 1
+
+        return render_template('search.html', chos=objects)
+    except KeyError:
+        return render_template('not_found.html', query=query)
+
 
 @app.route('/search/author')
 def search_author():
