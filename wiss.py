@@ -27,11 +27,11 @@ def search():
         PREFIX ore: <http://www.openarchives.org/ore/terms/>
         PREFIX edm: <http://www.europeana.eu/schemas/edm/>
 
-        SELECT ?title ?author ?content_type ?content_provider ?link ?image ?object (GROUP_CONCAT(?desc ; SEPARATOR = " ") AS ?description)
+        SELECT ?title ?content_type ?content_provider ?link ?image ?object (GROUP_CONCAT(?desc ; SEPARATOR = " ") AS ?description) (GROUP_CONCAT(?au ; SEPARATOR = ";") AS ?author)
         WHERE {
           ?proxy dc:subject "%s";
             dc:title ?title ;
-            dc:creator ?author ;
+            dc:creator ?au ;
             ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
             ore:proxyFor ?object ;
             edm:type ?content_type ;
@@ -74,10 +74,11 @@ def search():
             desc = result["description"]["value"]
             if len(desc) > 500:
                 desc = desc[0:500] + " [...]"
+            authors = result["author"]["value"].split(';')
 
             objects.append({
                 "title": result["title"]["value"],
-                "author": result["author"]["value"],
+                "author": authors,
                 "description": desc,
                 "content_type": result["content_type"]["value"],
                 "content_provider": result["content_provider"]["value"],
@@ -129,7 +130,7 @@ def search_author():
 
         objects.append({
             "title": result["title"]["value"],
-            "author": result["author"]["value"],
+            "author": [result["author"]["value"]],
             "description": desc,
             "content_type": result["content_type"]["value"],
             "content_provider": result["content_provider"]["value"],

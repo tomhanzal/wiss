@@ -10,7 +10,7 @@
         <div class="col-xs-6 col-sm-4 col-md-3 cho">
           <a href="{{ cho.content_link }}"><img src="{{ cho.picture }}" title="{{ cho.title }}" alt="{{ cho.title }}" class="img-thumbnail"></a>
           <h4>{{ cho.title }}</h4>
-          <p><strong><a href="#" data-toggle="modal" data-target="#{{ cho.id }}-author" class="author">{{ cho.author }}</a></strong></p>
+          <p><strong><a href="#" data-toggle="modal" data-target="#{{ cho.id }}-author" class="author">{{ cho.author.0 }}</a></strong></p>
           <p>{{ cho.description }}</p>
           <div class="well">
             <p>Content type: {{ cho.content_type }}</p>
@@ -24,13 +24,13 @@
             <div class="modal-content">
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title" id="{{ cho.id }}-author-label">{{ cho.author }}</h4>
+                <h4 class="modal-title" id="{{ cho.id }}-author-label">{{ cho.author.0 }}</h4>
               </div>
               <div class="modal-body">
 
               </div>
               <div class="modal-footer">
-                <a class="btn btn-primary" href="/search/author?q={{ cho.author }}" role="button">Search for works by {{ cho.author }} &raquo;</a>
+                <a class="btn btn-primary" href="/search/author?q={{ cho.author.0 }}" role="button">Search for works by {{ cho.author.0 }} &raquo;</a>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
               </div>
             </div><!-- /.modal-content -->
