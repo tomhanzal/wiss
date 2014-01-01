@@ -27,8 +27,8 @@ def search():
         PREFIX ore: <http://www.openarchives.org/ore/terms/>
         PREFIX edm: <http://www.europeana.eu/schemas/edm/>
 
-        select ?title ?author ?content_type ?content_provider ?link ?image ?object (GROUP_CONCAT(?desc ; SEPARATOR = " ") AS ?description)
-        where {
+        SELECT ?title ?author ?content_type ?content_provider ?link ?image ?object (GROUP_CONCAT(?desc ; SEPARATOR = " ") AS ?description)
+        WHERE {
           ?proxy dc:subject "%s";
             dc:title ?title ;
             dc:creator ?author ;
@@ -37,8 +37,8 @@ def search():
             edm:type ?content_type ;
             dc:description ?desc .
         }
-        group by ?object ?title ?content_type ?content_provider ?link ?image ?author
-        limit 100
+        GROUP BY ?object ?title ?content_type ?content_provider ?link ?image ?author
+        LIMIT 100
     """ % query)
 
     # If searching by URI...
@@ -48,8 +48,8 @@ def search():
             PREFIX ore: <http://www.openarchives.org/ore/terms/>
             PREFIX edm: <http://www.europeana.eu/schemas/edm/>
 
-            select ?title ?author ?description ?content_type ?content_provider ?link ?image ?object
-            where {
+            SELECT ?title ?author ?description ?content_type ?content_provider ?link ?image ?object
+            WHERE {
               ?proxy1 edm:hasMet <%s> ;
                 ore:proxyFor ?object .
               ?proxy dc:title ?title ;
@@ -59,7 +59,7 @@ def search():
                 ore:proxyFor ?object ;
                 edm:type ?content_type .
             }
-            limit 100
+            LIMIT 100
         """ % query)
 
     sparql.setReturnFormat(JSON)
@@ -103,16 +103,17 @@ def search_author():
         PREFIX ore: <http://www.openarchives.org/ore/terms/>
         PREFIX edm: <http://www.europeana.eu/schemas/edm/>
 
-        select ?title ?author ?description ?content_type ?content_provider ?link ?image ?object
-        where {
+        SELECT ?title ?author ?content_type ?content_provider ?link ?image ?object (GROUP_CONCAT(?desc ; SEPARATOR = " ") AS ?description)
+        WHERE {
           ?proxy dc:creator "%s", ?author ;
             dc:title ?title ;
-            dc:description ?description ;
+            dc:description ?desc ;
             ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
             ore:proxyFor ?object ;
             edm:type ?content_type .
         }
-        limit 40
+        GROUP BY ?object ?title ?content_type ?content_provider ?link ?image ?author
+        LIMIT 40
     """ % query)
 
     sparql.setReturnFormat(JSON)
@@ -152,18 +153,19 @@ def author_info():
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         PREFIX foaf: <http://xmlns.com/foaf/0.1/>
         PREFIX dbo: <http://dbpedia.org/ontology/>
+        PREFIX yago: <http://dbpedia.org/class/yago/>
 
-        select ?name ?abstract ?image ?link
-        where {
+        SELECT ?name ?abstract ?image ?link
+        WHERE {
           ?person foaf:name "%s"@en ;
-            a dbo:Artist ;
+            a yago:Artist109812338 ;
             dbo:abstract ?abstract ;
             foaf:name ?name ;
             foaf:isPrimaryTopicOf ?link .
           optional {?person foaf:depiction ?image . }
           filter(lang(?abstract) = "en")
         }
-        limit 1
+        LIMIT 1
     """ % author)
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
@@ -193,13 +195,13 @@ def list_subjects():
         PREFIX ore: <http://www.openarchives.org/ore/terms/>
         PREFIX edm: <http://www.europeana.eu/schemas/edm/>
 
-        select ?subject
-        where {
+        SELECT ?subject
+        WHERE {
           {
           ?proxy ore:proxyFor %s ;
             dc:subject ?subject .
           }
-          union {
+          UNION {
           ?proxy ore:proxyFor %s ;
             edm:hasMet ?subject .
           }
