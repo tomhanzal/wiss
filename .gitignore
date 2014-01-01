@@ -1,6 +1,4 @@
 venv
-*.pyc
-*.pyc~
 test.py
-*.py~
-*.json~
+*.pyc
+*~
