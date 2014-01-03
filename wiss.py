@@ -15,17 +15,25 @@ def get_sparql_query(what, q):
 
             SELECT ?title ?content_type ?content_provider ?link ?image ?object (GROUP_CONCAT(?desc ; SEPARATOR = " ") AS ?description) (GROUP_CONCAT(?au ; SEPARATOR = ";") AS ?author)
             WHERE {
-              ?proxy dc:subject "%s";
+              {?proxy dc:subject "%s";
                 dc:title ?title ;
                 dc:creator ?au ;
                 ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
                 ore:proxyFor ?object ;
                 edm:type ?content_type ;
-                dc:description ?desc .
+                dc:description ?desc . }
+              UNION
+              {?proxy dc:subject "%s";
+                dc:title ?title ;
+                dc:creator ?au ;
+                ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
+                ore:proxyFor ?object ;
+                edm:type ?content_type ;
+                dc:description ?desc . }
             }
             GROUP BY ?object ?title ?content_type ?content_provider ?link ?image ?author
             LIMIT 100
-        """ % q
+        """ % (q[0], q[1])
 
     elif what == 'search_author':
         sparql_query = """
@@ -33,16 +41,16 @@ def get_sparql_query(what, q):
             PREFIX ore: <http://www.openarchives.org/ore/terms/>
             PREFIX edm: <http://www.europeana.eu/schemas/edm/>
 
-            SELECT ?title ?author ?content_type ?content_provider ?link ?image ?object (GROUP_CONCAT(?desc ; SEPARATOR = " ") AS ?description)
+            SELECT ?title ?content_type ?content_provider ?link ?image ?object (GROUP_CONCAT(?desc ; SEPARATOR = " ") AS ?description) (GROUP_CONCAT(?au ; SEPARATOR = ";") AS ?author)
             WHERE {
-              ?proxy dc:creator "%s", ?author ;
+              ?proxy dc:creator "%s", ?au ;
                 dc:title ?title ;
                 dc:description ?desc ;
                 ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
                 ore:proxyFor ?object ;
                 edm:type ?content_type .
             }
-            GROUP BY ?object ?title ?content_type ?content_provider ?link ?image ?author
+            GROUP BY ?object ?title ?content_type ?content_provider ?link ?image
             LIMIT 40
         """ % q
 
@@ -123,6 +131,7 @@ def get_sparql_query(what, q):
 
 def convert_name(name):
     output = re.sub('\s\(\w*\)', '', name)
+    output = re.sub('\s\[\w*\]', '', name)
     if ',' in output:
         output = output.split(', ')
         output = '%s %s' % (output[1], output[0])
@@ -137,9 +146,10 @@ def homepage():
 @app.route('/search')
 def search():
     query = request.args.get('q', '', type=str)
+    queries = [query[0].upper() + query[1:], query[0].lower() + query[1:]]
 
     sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
-    sparql.setQuery(get_sparql_query('search', query))
+    sparql.setQuery(get_sparql_query('search', queries))
 
     # If searching by URI...
     if query[0:7] == "http://":
@@ -194,10 +204,11 @@ def search_author():
         desc = result["description"]["value"]
         if len(desc) > 500:
             desc = desc[0:500] + " [...]"
+        authors = result["author"]["value"].split(';')
 
         objects.append({
             "title": result["title"]["value"],
-            "author": [result["author"]["value"]],
+            "author": authors,
             "description": desc,
             "content_type": result["content_type"]["value"],
             "content_provider": result["content_provider"]["value"],
