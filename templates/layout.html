@@ -116,7 +116,7 @@
           $.getJSON('/s', { obj: self.data("obj") }, function(data) {
             $(self.data('target')+" .modal-body .loading-indicator").hide();
             $.each(data["subjects"], function(index, item) {
-              $(self.data('target')+" .modal-body ul").append("<li><a href=\"/search?q="+item["subject"]+"\">"+item["label"]+"</a></li>");
+              $(self.data('target')+" .modal-body ul").append("<li><a href=\"/search?q="+item+"\">"+item+"</a></li>");
             });
           });
         });
