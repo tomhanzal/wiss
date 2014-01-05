@@ -32,6 +32,7 @@ def get_sparql_query(what, q):
                 dc:description ?desc . }
             }
             GROUP BY ?object ?title ?content_type ?content_provider ?link ?image ?author
+            ORDER BY ?title
             LIMIT 100
         """ % (q[0], q[1])
 
@@ -51,6 +52,7 @@ def get_sparql_query(what, q):
                 edm:type ?content_type .
             }
             GROUP BY ?object ?title ?content_type ?content_provider ?link ?image
+            ORDER BY ?title
             LIMIT 40
         """ % q
 
@@ -71,6 +73,7 @@ def get_sparql_query(what, q):
                 ore:proxyFor ?object ;
                 edm:type ?content_type .
             }
+            ORDER BY ?title
             LIMIT 100
         """ % q
 
@@ -192,8 +195,9 @@ def get_sparql_query(what, q):
                 dc:description ?desc . }
             }
             GROUP BY ?object ?title ?content_type ?content_provider ?link ?image ?author
+            ORDER BY ?title
             LIMIT 100
-        """ % ([0], q[1], q[2], q[3], q[4], q[5])
+        """ % (q[0], q[1], q[2], q[3], q[4], q[5])
 
     return sparql_query
         
