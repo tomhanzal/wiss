@@ -193,11 +193,19 @@ def get_sparql_query(what, q):
                 ore:proxyFor ?object ;
                 edm:type ?content_type ;
                 dc:description ?desc . }
+              UNION
+              {?proxy dc:subject "%s";
+                dc:title ?title ;
+                dc:creator ?au ;
+                ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
+                ore:proxyFor ?object ;
+                edm:type ?content_type ;
+                dc:description ?desc . }
             }
             GROUP BY ?object ?title ?content_type ?content_provider ?link ?image ?author
             ORDER BY ?title
             LIMIT 100
-        """ % (q[0], q[1], q[2], q[3], q[4], q[5])
+        """ % (q[0], q[1], q[2], q[3], q[4], q[5], q[6])
 
     return sparql_query
         
@@ -219,7 +227,7 @@ def homepage():
 
 @app.route('/search')
 def search():
-    query = request.args.get('q', '', type=str)
+    query = request.args.get('q', type=unicode)
 
     sparql = SPARQLWrapper("http://semantic.eea.europa.eu/sparql")
     sparql.setQuery(get_sparql_query('get_gemet_labels', query.lower()))
@@ -236,7 +244,8 @@ def search():
     if query[0:7] == "http://":
         sparql.setQuery(get_sparql_query('search_uri', query))
     else:
-        if subjects:
+        if len(subjects) >= 6:
+            subjects[6] = query[0].upper() + query[1:]
             sparql.setQuery(get_sparql_query('search_mult_langs', subjects))
         else:
             queries = [query[0].upper() + query[1:], query[0].lower() + query[1:]]
@@ -276,7 +285,7 @@ def search():
 
 @app.route('/search/author')
 def search_author():
-    query = request.args.get('q', '', type=str)
+    query = request.args.get('q', type=unicode)
 
     sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
     sparql.setQuery(get_sparql_query('search_author', query))
@@ -311,7 +320,7 @@ def search_author():
 
 @app.route('/a')
 def author_info():
-    author = request.args.get('author', '', type=str)
+    author = request.args.get('author', type=unicode)
     author = convert_name(author)
 
     sparql = SPARQLWrapper("http://dbpedia.org/sparql")
@@ -336,7 +345,7 @@ def author_info():
 
 @app.route('/s')
 def list_subjects():
-    obj = request.args.get('obj', '', type=str)
+    obj = request.args.get('obj', type=unicode)
     obj = "<%s>" % obj
 
     sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
