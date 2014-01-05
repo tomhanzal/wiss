@@ -131,7 +131,7 @@ def get_sparql_query(what, q):
             SELECT ?label
             WHERE {
               <%s> skos:prefLabel ?label .
-              filter(lang(?label) = "en" || lang(?label) = "de")
+              filter(lang(?label) = "en" || lang(?label) = "de" || lang(?label) = "nl" || lang(?label) = "fr" || lang(?label) = "es")
             }
         """ % q
 
