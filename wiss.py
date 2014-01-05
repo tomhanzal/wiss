@@ -130,10 +130,70 @@ def get_sparql_query(what, q):
 
             SELECT ?label
             WHERE {
-              <%s> skos:prefLabel ?label .
-              filter(lang(?label) = "en" || lang(?label) = "de" || lang(?label) = "nl" || lang(?label) = "fr" || lang(?label) = "es")
+              [] skos:prefLabel "%s"@en, ?label .
+              filter(lang(?label) = "en" || lang(?label) = "de" || lang(?label) = "nl" || lang(?label) = "fr" || lang(?label) = "es" || lang(?label) ="it")
             }
         """ % q
+
+    elif what == 'search_mult_langs':
+        sparql_query = """
+            PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            PREFIX ore: <http://www.openarchives.org/ore/terms/>
+            PREFIX edm: <http://www.europeana.eu/schemas/edm/>
+
+            SELECT ?title ?content_type ?content_provider ?link ?image ?object (GROUP_CONCAT(?desc ; SEPARATOR = " ") AS ?description) (GROUP_CONCAT(?au ; SEPARATOR = ";") AS ?author)
+            WHERE {
+              {?proxy dc:subject "%s";
+                dc:title ?title ;
+                dc:creator ?au ;
+                ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
+                ore:proxyFor ?object ;
+                edm:type ?content_type ;
+                dc:description ?desc . }
+              UNION
+              {?proxy dc:subject "%s";
+                dc:title ?title ;
+                dc:creator ?au ;
+                ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
+                ore:proxyFor ?object ;
+                edm:type ?content_type ;
+                dc:description ?desc . }
+              UNION
+              {?proxy dc:subject "%s";
+                dc:title ?title ;
+                dc:creator ?au ;
+                ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
+                ore:proxyFor ?object ;
+                edm:type ?content_type ;
+                dc:description ?desc . }
+              UNION
+              {?proxy dc:subject "%s";
+                dc:title ?title ;
+                dc:creator ?au ;
+                ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
+                ore:proxyFor ?object ;
+                edm:type ?content_type ;
+                dc:description ?desc . }
+              UNION
+              {?proxy dc:subject "%s";
+                dc:title ?title ;
+                dc:creator ?au ;
+                ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
+                ore:proxyFor ?object ;
+                edm:type ?content_type ;
+                dc:description ?desc . }
+              UNION
+              {?proxy dc:subject "%s";
+                dc:title ?title ;
+                dc:creator ?au ;
+                ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
+                ore:proxyFor ?object ;
+                edm:type ?content_type ;
+                dc:description ?desc . }
+            }
+            GROUP BY ?object ?title ?content_type ?content_provider ?link ?image ?author
+            LIMIT 100
+        """ % ([0], q[1], q[2], q[3], q[4], q[5])
 
     return sparql_query
         
@@ -156,14 +216,27 @@ def homepage():
 @app.route('/search')
 def search():
     query = request.args.get('q', '', type=str)
-    queries = [query[0].upper() + query[1:], query[0].lower() + query[1:]]
+
+    sparql = SPARQLWrapper("http://semantic.eea.europa.eu/sparql")
+    sparql.setQuery(get_sparql_query('get_gemet_labels', query.lower()))
+    sparql.setReturnFormat(JSON)
+
+    subjects = list()
+    results = sparql.query().convert()
+    for result in results["results"]["bindings"]:
+        subjects.append(result["label"]["value"])
 
     sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
-    sparql.setQuery(get_sparql_query('search', queries))
 
     # If searching by URI...
     if query[0:7] == "http://":
         sparql.setQuery(get_sparql_query('search_uri', query))
+    else:
+        if subjects:
+            sparql.setQuery(get_sparql_query('search_mult_langs', subjects))
+        else:
+            queries = [query[0].upper() + query[1:], query[0].lower() + query[1:]]
+            sparql.setQuery(get_sparql_query('search', queries))
 
     sparql.setReturnFormat(JSON)
 
@@ -276,15 +349,14 @@ def list_subjects():
         if subject[0:42] == "http://www.eionet.europa.eu/gemet/concept/":
 
             sparql = SPARQLWrapper("http://semantic.eea.europa.eu/sparql")
-            sparql.setQuery(get_sparql_query('get_gemet_labels', subject))
+            sparql.setQuery(get_sparql_query('get_gemet_label', subject))
             sparql.setReturnFormat(JSON)
-            thes_results = sparql.query().convert()
+            thes_result = sparql.query().convert()
 
-            for label in thes_results["results"]["bindings"]:
-                subjects.append(label["label"]["value"])
+            subjects.append([thes_result["results"]["bindings"][0]["label"]["value"] + ' <small>[from GEMET thesaurus]</small>', subject])
 
         else:
-            subjects.append(subject)
+            subjects.append([subject, subject])
 
     return jsonify(dict({"subjects": subjects}))
 
