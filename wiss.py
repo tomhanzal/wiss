@@ -244,21 +244,23 @@ def search():
     if query[0:7] == "http://":
         sparql.setQuery(get_sparql_query('search_uri', query))
     else:
-        if len(subjects) >= 6:
+        if len(subjects) > 6:
             subjects[6] = query[0].upper() + query[1:]
+            sparql.setQuery(get_sparql_query('search_mult_langs', subjects))
+        elif len(subjects) == 6:
+            subjects.append(query[0].upper() + query[1:])
             sparql.setQuery(get_sparql_query('search_mult_langs', subjects))
         else:
             queries = [query[0].upper() + query[1:], query[0].lower() + query[1:]]
             sparql.setQuery(get_sparql_query('search', queries))
 
     sparql.setReturnFormat(JSON)
+    results = sparql.query().convert()
 
     objects = list()
     idnum = 0
 
     try:
-        results = sparql.query().convert()
-
         for result in results["results"]["bindings"]:
             desc = result["description"]["value"]
             if len(desc) > 500:
@@ -280,7 +282,7 @@ def search():
 
         return render_template('search.html', chos=objects)
     except KeyError:
-        return render_template('not_found.html', query=query)
+        return render_template('not_found.html', query=query), 404
 
 
 @app.route('/search/author')
@@ -296,26 +298,29 @@ def search_author():
     objects = list()
     idnum = 0
 
-    for result in results["results"]["bindings"]:
-        desc = result["description"]["value"]
-        if len(desc) > 500:
-            desc = desc[0:500] + " [...]"
-        authors = result["author"]["value"].split(';')
+    try:
+        for result in results["results"]["bindings"]:
+            desc = result["description"]["value"]
+            if len(desc) > 500:
+                desc = desc[0:500] + " [...]"
+            authors = result["author"]["value"].split(';')
 
-        objects.append({
-            "title": result["title"]["value"],
-            "author": authors,
-            "description": desc,
-            "content_type": result["content_type"]["value"],
-            "content_provider": result["content_provider"]["value"],
-            "content_link": result["link"]["value"],
-            "picture": result["image"]["value"],
-            "id": idnum,
-            "obj": result["object"]["value"]
-        })
-        idnum = idnum + 1
+            objects.append({
+                "title": result["title"]["value"],
+                "author": authors,
+                "description": desc,
+                "content_type": result["content_type"]["value"],
+                "content_provider": result["content_provider"]["value"],
+                "content_link": result["link"]["value"],
+                "picture": result["image"]["value"],
+                "id": idnum,
+                "obj": result["object"]["value"]
+               })
+            idnum = idnum + 1
 
-    return render_template('search.html', chos=objects)
+        return render_template('search.html', chos=objects)
+    except KeyError:
+        return render_template('not_found.html', query=query), 404
 
 
 @app.route('/a')
