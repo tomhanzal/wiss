@@ -6,7 +6,7 @@ from SPARQLWrapper import SPARQLWrapper, JSON
 app = Flask(__name__)
 
 
-def get_sparql_query(what, q):
+def get_sparql_query(what, *q):
     if what == 'search':
         sparql_query = """
             PREFIX dc: <http://purl.org/dc/elements/1.1/>
@@ -34,7 +34,7 @@ def get_sparql_query(what, q):
             GROUP BY ?object ?title ?content_type ?content_provider ?link ?image ?author
             ORDER BY ?title
             LIMIT 100
-        """ % (q[0], q[1])
+        """ % q
 
     elif what == 'search_author':
         sparql_query = """
@@ -114,7 +114,7 @@ def get_sparql_query(what, q):
                 edm:hasMet ?subject .
               }
             }
-        """ % (q, q)
+        """ % q
 
     elif what == 'get_gemet_label':
         sparql_query = """
@@ -205,7 +205,7 @@ def get_sparql_query(what, q):
             GROUP BY ?object ?title ?content_type ?content_provider ?link ?image ?author
             ORDER BY ?title
             LIMIT 100
-        """ % (q[0], q[1], q[2], q[3], q[4], q[5], q[6])
+        """ % q
 
     return sparql_query
         
@@ -240,19 +240,17 @@ def search():
 
     sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
 
-    # If searching by URI...
     if query[0:7] == "http://":
+        # If searching by URI...
         sparql.setQuery(get_sparql_query('search_uri', query))
     else:
-        if len(subjects) > 6:
-            subjects[6] = query[0].upper() + query[1:]
-            sparql.setQuery(get_sparql_query('search_mult_langs', subjects))
-        elif len(subjects) == 6:
+        if len(subjects) >= 6:
+            subjects = subjects[:6]
             subjects.append(query[0].upper() + query[1:])
-            sparql.setQuery(get_sparql_query('search_mult_langs', subjects))
+            sparql.setQuery(get_sparql_query('search_mult_langs', *subjects))
         else:
             queries = [query[0].upper() + query[1:], query[0].lower() + query[1:]]
-            sparql.setQuery(get_sparql_query('search', queries))
+            sparql.setQuery(get_sparql_query('search', *queries))
 
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
@@ -261,6 +259,7 @@ def search():
     idnum = 0
 
     try:
+        count = len(results["results"]["bindings"])
         for result in results["results"]["bindings"]:
             desc = result["description"]["value"]
             if len(desc) > 500:
@@ -280,7 +279,7 @@ def search():
             })
             idnum = idnum + 1
 
-        return render_template('search.html', chos=objects)
+        return render_template('search.html', chos=objects, count=count)
     except KeyError:
         return render_template('not_found.html', query=query), 404
 
@@ -299,6 +298,7 @@ def search_author():
     idnum = 0
 
     try:
+        count = len(results["results"]["bindings"])
         for result in results["results"]["bindings"]:
             desc = result["description"]["value"]
             if len(desc) > 500:
@@ -318,7 +318,7 @@ def search_author():
                })
             idnum = idnum + 1
 
-        return render_template('search.html', chos=objects)
+        return render_template('search.html', chos=objects, count=count)
     except KeyError:
         return render_template('not_found.html', query=query), 404
 
@@ -354,7 +354,7 @@ def list_subjects():
     obj = "<%s>" % obj
 
     sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
-    sparql.setQuery(get_sparql_query('get_subjects', obj))
+    sparql.setQuery(get_sparql_query('get_subjects', *[obj, obj]))
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
 
