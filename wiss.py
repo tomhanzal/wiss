@@ -53,7 +53,7 @@ def get_sparql_query(what, *q):
             }
             GROUP BY ?object ?title ?content_type ?content_provider ?link ?image
             ORDER BY ?title
-            LIMIT 40
+            LIMIT 100
         """ % q
 
     elif what == 'search_uri':
@@ -134,7 +134,18 @@ def get_sparql_query(what, *q):
             SELECT ?label
             WHERE {
               [] skos:prefLabel "%s"@en, ?label .
-              filter(lang(?label) = "en" || lang(?label) = "de" || lang(?label) = "nl" || lang(?label) = "fr" || lang(?label) = "es" || lang(?label) ="it")
+              filter(lang(?label) = "en" || lang(?label) = "de" || lang(?label) = "nl" || lang(?label) = "fr" || lang(?label) = "es" || lang(?label) ="it" || lang(?label) = "cs")
+            }
+        """ % q
+
+    elif what == 'get_gemet_labels_cs':
+        sparql_query = """
+            PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+            SELECT ?label
+            WHERE {
+              [] skos:prefLabel "%s"@cs, ?label .
+              filter(lang(?label) = "en" || lang(?label) = "de" || lang(?label) = "nl" || lang(?label) = "fr" || lang(?label) = "es" || lang(?label) ="it" || lang(?label) = "cs")
             }
         """ % q
 
@@ -201,11 +212,46 @@ def get_sparql_query(what, *q):
                 ore:proxyFor ?object ;
                 edm:type ?content_type ;
                 dc:description ?desc . }
+              UNION
+              {?proxy dc:subject "%s";
+                dc:title ?title ;
+                dc:creator ?au ;
+                ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
+                ore:proxyFor ?object ;
+                edm:type ?content_type ;
+                dc:description ?desc . }
             }
             GROUP BY ?object ?title ?content_type ?content_provider ?link ?image ?author
             ORDER BY ?title
             LIMIT 100
         """ % q
+
+    elif what == 'search_mult_langs1':
+        sparql_query = """
+            PREFIX dc: <http://purl.org/dc/elements/1.1/>
+            PREFIX ore: <http://www.openarchives.org/ore/terms/>
+            PREFIX edm: <http://www.europeana.eu/schemas/edm/>
+
+            SELECT ?title ?content_type ?content_provider ?link ?image ?object (GROUP_CONCAT(?desc ; SEPARATOR = " ") AS ?description) (GROUP_CONCAT(?au ; SEPARATOR = ";") AS ?author)
+            WHERE {"""
+
+        for word in q:
+            sparql_query = sparql_query + """
+              {?proxy dc:subject "%s";
+                dc:title ?title ;
+                dc:creator ?au ;
+                ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
+                ore:proxyFor ?object ;
+                edm:type ?content_type ;
+                dc:description ?desc . }
+              UNION""" % word
+
+        sparql_query = sparql_query + """
+            {}
+          }
+          GROUP BY ?object ?title ?content_type ?content_provider ?link ?image ?author
+          ORDER BY ?title
+          LIMIT 100"""
 
     return sparql_query
         
@@ -238,14 +284,22 @@ def search():
     for result in results["results"]["bindings"]:
         subjects.append(result["label"]["value"])
 
+    if len(subjects) == 0:
+        sparql.setQuery(get_sparql_query('get_gemet_labels_cs', query.lower()))
+        sparql.setReturnFormat(JSON)
+
+        results = sparql.query().convert()
+        for result in results["results"]["bindings"]:
+            subjects.append(result["label"]["value"])
+
     sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
 
     if query[0:7] == "http://":
         # If searching by URI...
         sparql.setQuery(get_sparql_query('search_uri', query))
     else:
-        if len(subjects) >= 6:
-            subjects = subjects[:6]
+        if len(subjects) >= 7:
+            subjects = subjects[:7]
             subjects.append(query[0].upper() + query[1:])
             sparql.setQuery(get_sparql_query('search_mult_langs', *subjects))
         else:
@@ -260,6 +314,9 @@ def search():
 
     try:
         count = len(results["results"]["bindings"])
+        if count == 100:
+            count = "100+"
+
         for result in results["results"]["bindings"]:
             desc = result["description"]["value"]
             if len(desc) > 500:
@@ -299,6 +356,9 @@ def search_author():
 
     try:
         count = len(results["results"]["bindings"])
+        if count == 100:
+            count = "100+"
+
         for result in results["results"]["bindings"]:
             desc = result["description"]["value"]
             if len(desc) > 500:
