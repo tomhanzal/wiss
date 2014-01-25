@@ -226,33 +226,6 @@ def get_sparql_query(what, *q):
             LIMIT 100
         """ % q
 
-    elif what == 'search_mult_langs1':
-        sparql_query = """
-            PREFIX dc: <http://purl.org/dc/elements/1.1/>
-            PREFIX ore: <http://www.openarchives.org/ore/terms/>
-            PREFIX edm: <http://www.europeana.eu/schemas/edm/>
-
-            SELECT ?title ?content_type ?content_provider ?link ?image ?object (GROUP_CONCAT(?desc ; SEPARATOR = " ") AS ?description) (GROUP_CONCAT(?au ; SEPARATOR = ";") AS ?author)
-            WHERE {"""
-
-        for word in q:
-            sparql_query = sparql_query + """
-              {?proxy dc:subject "%s";
-                dc:title ?title ;
-                dc:creator ?au ;
-                ore:proxyIn [edm:isShownAt ?link; edm:object ?image; edm:dataProvider ?content_provider] ;
-                ore:proxyFor ?object ;
-                edm:type ?content_type ;
-                dc:description ?desc . }
-              UNION""" % word
-
-        sparql_query = sparql_query + """
-            {}
-          }
-          GROUP BY ?object ?title ?content_type ?content_provider ?link ?image ?author
-          ORDER BY ?title
-          LIMIT 100"""
-
     return sparql_query
         
 
