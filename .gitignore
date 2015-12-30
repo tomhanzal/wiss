@@ -3,3 +3,4 @@ test.py
 *.pyc
 *~
 .DS_Store
+*.swp

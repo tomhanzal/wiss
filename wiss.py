@@ -248,22 +248,23 @@ def homepage():
 def search():
     query = request.args.get('q', type=unicode)
 
-    sparql = SPARQLWrapper("http://semantic.eea.europa.eu/sparql")
-    sparql.setQuery(get_sparql_query('get_gemet_labels', query.lower()))
-    sparql.setReturnFormat(JSON)
+    #sparql = SPARQLWrapper("http://semantic.eea.europa.eu/sparql")
+    #sparql.setQuery(get_sparql_query('get_gemet_labels', query.lower()))
+    #sparql.setReturnFormat(JSON)
 
-    subjects = list()
-    results = sparql.query().convert()
-    for result in results["results"]["bindings"]:
-        subjects.append(result["label"]["value"])
+    #subjects = list()
+    #results = sparql.query().convert()
+    #for result in results["results"]["bindings"]:
+    #    subjects.append(result["label"]["value"])
 
-    if len(subjects) == 0:
-        sparql.setQuery(get_sparql_query('get_gemet_labels_cs', query.lower()))
-        sparql.setReturnFormat(JSON)
+    #if len(subjects) == 0:
+    #    sparql.setQuery(get_sparql_query('get_gemet_labels_cs', query.lower()))
+    #    sparql.setReturnFormat(JSON)
 
-        results = sparql.query().convert()
-        for result in results["results"]["bindings"]:
-            subjects.append(result["label"]["value"])
+    #    results = sparql.query().convert()
+    #    for result in results["results"]["bindings"]:
+    #        subjects.append(result["label"]["value"])
+    subjects = [query]
 
     sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
 
