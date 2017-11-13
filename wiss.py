@@ -2,8 +2,14 @@ import os, re
 from flask import Flask, render_template, request, jsonify
 from SPARQLWrapper import SPARQLWrapper, JSON
 
+import traceback
+
 
 app = Flask(__name__)
+
+EUROPEANA_SPARQL = "http://sparql.europeana.eu"
+DBPEDIA_SPARQL = "http://dbpedia.org/sparql"
+GEMET_SPARQL = "http://semantic.eea.europa.eu/sparql"
 
 
 def get_sparql_query(what, *q):
@@ -13,7 +19,7 @@ def get_sparql_query(what, *q):
             PREFIX ore: <http://www.openarchives.org/ore/terms/>
             PREFIX edm: <http://www.europeana.eu/schemas/edm/>
 
-            SELECT ?title ?content_type ?content_provider ?link ?image ?object (GROUP_CONCAT(?desc ; SEPARATOR = " ") AS ?description) (GROUP_CONCAT(?au ; SEPARATOR = ";") AS ?author)
+            SELECT ?title ?content_type ?content_provider ?link ?image ?object (GROUP_CONCAT(?desc ; SEPARATOR = " ") AS ?description) (GROUP_CONCAT(?au ; SEPARATOR = ";") AS ?auth)
             WHERE {
               {?proxy dc:subject "%s";
                 dc:title ?title ;
@@ -248,7 +254,7 @@ def homepage():
 def search():
     query = request.args.get('q', type=unicode)
 
-    #sparql = SPARQLWrapper("http://semantic.eea.europa.eu/sparql")
+    #sparql = SPARQLWrapper(GEMET_SPARQL)
     #sparql.setQuery(get_sparql_query('get_gemet_labels', query.lower()))
     #sparql.setReturnFormat(JSON)
 
@@ -266,7 +272,7 @@ def search():
     #        subjects.append(result["label"]["value"])
     subjects = [query]
 
-    sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
+    sparql = SPARQLWrapper(EUROPEANA_SPARQL)
 
     if query[0:7] == "http://":
         # If searching by URI...
@@ -295,7 +301,7 @@ def search():
             desc = result["description"]["value"]
             if len(desc) > 500:
                 desc = desc[0:500] + " [...]"
-            authors = result["author"]["value"].split(';')
+            authors = result["auth"]["value"].split(';')
 
             objects.append({
                 "title": result["title"]["value"],
@@ -311,15 +317,18 @@ def search():
             idnum = idnum + 1
 
         return render_template('search.html', chos=objects, count=count)
-    except KeyError:
-        return render_template('not_found.html', query=query), 404
+    #except KeyError:
+    #    return render_template('not_found.html', query=query), 404
+    except:
+        #return traceback.format_exc()
+        return str(result)
 
 
 @app.route('/search/author')
 def search_author():
     query = request.args.get('q', type=unicode)
 
-    sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
+    sparql = SPARQLWrapper(EUROPEANA_SPARQL)
     sparql.setQuery(get_sparql_query('search_author', query))
 
     sparql.setReturnFormat(JSON)
@@ -362,12 +371,15 @@ def author_info():
     author = request.args.get('author', type=unicode)
     author = convert_name(author)
 
-    sparql = SPARQLWrapper("http://dbpedia.org/sparql")
+    sparql = SPARQLWrapper(DBPEDIA_SPARQL)
     sparql.setQuery(get_sparql_query('get_author_info', author))
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
 
-    result = results["results"]["bindings"][0]
+    try:
+        result = results["results"]["bindings"][0]
+    except:
+        return ""
 
     abstract = result["abstract"]["value"]
     if len(abstract) > 1000:
@@ -387,7 +399,7 @@ def list_subjects():
     obj = request.args.get('obj', type=unicode)
     obj = "<%s>" % obj
 
-    sparql = SPARQLWrapper("http://europeana.ontotext.com/sparql")
+    sparql = SPARQLWrapper(EUROPEANA_SPARQL)
     sparql.setQuery(get_sparql_query('get_subjects', *[obj, obj]))
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
@@ -398,17 +410,17 @@ def list_subjects():
         subject = result["subject"]["value"]
 
         # Label GEMET thesaurus URIs
-        if subject[0:42] == "http://www.eionet.europa.eu/gemet/concept/":
+        #if subject[0:42] == "http://www.eionet.europa.eu/gemet/concept/":
 
-            sparql = SPARQLWrapper("http://semantic.eea.europa.eu/sparql")
-            sparql.setQuery(get_sparql_query('get_gemet_label', subject))
-            sparql.setReturnFormat(JSON)
-            thes_result = sparql.query().convert()
+        #    sparql = SPARQLWrapper("http://semantic.eea.europa.eu/sparql")
+        #    sparql.setQuery(get_sparql_query('get_gemet_label', subject))
+        #    sparql.setReturnFormat(JSON)
+        #    thes_result = sparql.query().convert()
 
-            subjects.append([thes_result["results"]["bindings"][0]["label"]["value"] + ' <small>[from GEMET thesaurus]</small>', subject])
+        #    subjects.append([thes_result["results"]["bindings"][0]["label"]["value"] + ' <small>[from GEMET thesaurus]</small>', subject])
 
-        else:
-            subjects.append([subject, subject])
+        #else:
+        subjects.append([subject, subject])
 
     return jsonify(dict({"subjects": subjects}))
 
