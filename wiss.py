@@ -410,17 +410,21 @@ def list_subjects():
         subject = result["subject"]["value"]
 
         # Label GEMET thesaurus URIs
-        #if subject[0:42] == "http://www.eionet.europa.eu/gemet/concept/":
+        if subject[0:42] == "http://www.eionet.europa.eu/gemet/concept/":
 
-        #    sparql = SPARQLWrapper("http://semantic.eea.europa.eu/sparql")
-        #    sparql.setQuery(get_sparql_query('get_gemet_label', subject))
-        #    sparql.setReturnFormat(JSON)
-        #    thes_result = sparql.query().convert()
+            #sparql = SPARQLWrapper(GEMET_SPARQL)
+            #sparql.setQuery(get_sparql_query('get_gemet_label', subject))
+            #sparql.setReturnFormat(JSON)
+            #thes_result = sparql.query().convert()
 
-        #    subjects.append([thes_result["results"]["bindings"][0]["label"]["value"] + ' <small>[from GEMET thesaurus]</small>', subject])
+            #try:
+            #    subjects.append([thes_result["results"]["bindings"][0]["label"]["value"] + ' <small>[from GEMET thesaurus]</small>', subject])
+            #except:
+            #    pass
+            pass
 
-        #else:
-        subjects.append([subject, subject])
+        else:
+            subjects.append([subject, subject])
 
     return jsonify(dict({"subjects": subjects}))
 
