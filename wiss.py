@@ -2,7 +2,7 @@ import os, re
 from flask import Flask, render_template, request, jsonify
 from SPARQLWrapper import SPARQLWrapper, JSON
 
-import traceback
+#import traceback
 
 
 app = Flask(__name__)
