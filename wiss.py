@@ -252,7 +252,7 @@ def homepage():
 
 @app.route('/search')
 def search():
-    query = request.args.get('q', type=unicode)
+    query = request.args.get('q')
 
     #sparql = SPARQLWrapper(GEMET_SPARQL)
     #sparql.setQuery(get_sparql_query('get_gemet_labels', query.lower()))
@@ -326,7 +326,7 @@ def search():
 
 @app.route('/search/author')
 def search_author():
-    query = request.args.get('q', type=unicode)
+    query = request.args.get('q')
 
     sparql = SPARQLWrapper(EUROPEANA_SPARQL)
     sparql.setQuery(get_sparql_query('search_author', query))
@@ -368,7 +368,7 @@ def search_author():
 
 @app.route('/a')
 def author_info():
-    author = request.args.get('author', type=unicode)
+    author = request.args.get('author')
     author = convert_name(author)
 
     sparql = SPARQLWrapper(DBPEDIA_SPARQL)
@@ -396,7 +396,7 @@ def author_info():
 
 @app.route('/s')
 def list_subjects():
-    obj = request.args.get('obj', type=unicode)
+    obj = request.args.get('obj', type=str)
     obj = "<%s>" % obj
 
     sparql = SPARQLWrapper(EUROPEANA_SPARQL)
@@ -430,4 +430,4 @@ def list_subjects():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='127.0.0.1', port=8080)
