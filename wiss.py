@@ -387,7 +387,7 @@ def author_info():
 
     author_info = dict()
     author_info["abstract"] = abstract
-    author_info["image"] = result["image"]["value"]
+    author_info["image"] = result.get("image", {}).get("value")
     author_info["link"] = result["link"]["value"]
     author_info["name"] = result["name"]["value"]
 
